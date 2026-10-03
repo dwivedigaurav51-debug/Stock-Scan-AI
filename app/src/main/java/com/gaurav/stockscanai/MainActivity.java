@@ -1,3 +1,84 @@
 package com.gaurav.stockscanai;
-import android.Manifest;import android.app.*;import android.content.*;import android.content.pm.PackageManager;import android.os.*;import android.webkit.*;import androidx.core.app.*;
-public class MainActivity extends Activity{private WebView web;@Override public void onCreate(Bundle b){super.onCreate(b);createChannel();if(Build.VERSION.SDK_INT>=33&&checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS},101);web=new WebView(this);setContentView(web);WebSettings s=web.getSettings();s.setJavaScriptEnabled(true);s.setDomStorageEnabled(true);s.setCacheMode(WebSettings.LOAD_NO_CACHE);web.clearCache(true);web.addJavascriptInterface(new Bridge(this),"StockScanAndroid");web.setWebViewClient(new WebViewClient());web.setWebChromeClient(new WebChromeClient());web.loadUrl("file:///android_asset/index.html");}private void createChannel(){if(Build.VERSION.SDK_INT>=26){NotificationChannel c=new NotificationChannel("signals","Stock Scan Signals",NotificationManager.IMPORTANCE_HIGH);c.setDescription("Virtual trade signals, entries and exits");getSystemService(NotificationManager.class).createNotificationChannel(c);}}public static class Bridge{Context c;Bridge(Context c){this.c=c;}@JavascriptInterface public void notifySignal(String title,String body){NotificationCompat.Builder b=new NotificationCompat.Builder(c,"signals").setSmallIcon(android.R.drawable.ic_dialog_info).setContentTitle(title).setContentText(body).setPriority(NotificationCompat.PRIORITY_HIGH).setAutoCancel(true);if(ActivityCompat.checkSelfPermission(c,Manifest.permission.POST_NOTIFICATIONS)==PackageManager.PERMISSION_GRANTED)NotificationManagerCompat.from(c).notify((int)(System.currentTimeMillis()%100000),b.build());}}@Override public void onBackPressed(){if(web.canGoBack())web.goBack();else super.onBackPressed();}}
+
+import android.Manifest;
+import android.app.*;
+import android.content.*;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.*;
+import android.webkit.*;
+import androidx.core.app.*;
+import org.json.JSONObject;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+
+public class MainActivity extends Activity {
+    private WebView web;
+    @Override public void onCreate(Bundle b) {
+        super.onCreate(b);
+        createChannel();
+        if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
+        web = new WebView(this);
+        web.setKeepScreenOn(true);
+        setContentView(web);
+        WebSettings s = web.getSettings();
+        s.setJavaScriptEnabled(true);
+        s.setDomStorageEnabled(true);
+        s.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        web.clearCache(true);
+        web.addJavascriptInterface(new Bridge(this, web), "StockScanAndroid");
+        web.setWebViewClient(new WebViewClient());
+        web.setWebChromeClient(new WebChromeClient());
+        web.loadUrl("file:///android_asset/index.html");
+    }
+    private void createChannel() {
+        if (Build.VERSION.SDK_INT >= 26) {
+            NotificationChannel c = new NotificationChannel("signals", "Stock Scan Signals", NotificationManager.IMPORTANCE_HIGH);
+            c.setDescription("Virtual trade signals, entries and exits");
+            getSystemService(NotificationManager.class).createNotificationChannel(c);
+        }
+    }
+    public static class Bridge {
+        private final Context c;
+        private final WebView web;
+        private final SharedPreferences prefs;
+        Bridge(Context c, WebView web) { this.c=c; this.web=web; this.prefs=c.getSharedPreferences("stock_scan_secure", Context.MODE_PRIVATE); }
+        @JavascriptInterface public void saveApiKey(String key) { if (key != null) prefs.edit().putString("twelve_data_api_key", key.trim()).apply(); }
+        @JavascriptInterface public String getApiKey() { return prefs.getString("twelve_data_api_key", ""); }
+        @JavascriptInterface public void clearApiKey() { prefs.edit().remove("twelve_data_api_key").apply(); }
+        @JavascriptInterface public void apiGet(String requestId, String url) {
+            new Thread(() -> {
+                String body;
+                try {
+                    Uri u=Uri.parse(url);
+                    if (!"https".equalsIgnoreCase(u.getScheme()) || !"api.twelvedata.com".equalsIgnoreCase(u.getHost())) throw new IOException("Blocked API host");
+                    HttpURLConnection con=(HttpURLConnection)new URL(url).openConnection();
+                    con.setRequestMethod("GET"); con.setConnectTimeout(12000); con.setReadTimeout(12000);
+                    con.setRequestProperty("Accept","application/json"); con.setRequestProperty("User-Agent","StockScanAI/6.0");
+                    int code=con.getResponseCode();
+                    InputStream in=(code>=200&&code<400)?con.getInputStream():con.getErrorStream();
+                    body=readAll(in);
+                    if (body==null||body.trim().isEmpty()) { JSONObject e=new JSONObject(); e.put("status","error"); e.put("message","HTTP "+code+" empty response"); body=e.toString(); }
+                    con.disconnect();
+                } catch(Exception e) {
+                    try { JSONObject j=new JSONObject(); j.put("status","error"); j.put("message","Network error: "+e.getMessage()); body=j.toString(); }
+                    catch(Exception ignored) { body="{\"status\":\"error\",\"message\":\"Network error\"}"; }
+                }
+                final String result=body;
+                web.post(() -> web.evaluateJavascript("window.onNativeApiResult("+JSONObject.quote(requestId)+","+JSONObject.quote(result)+");",null));
+            }).start();
+        }
+        private static String readAll(InputStream in) throws IOException {
+            if(in==null)return "";
+            ByteArrayOutputStream out=new ByteArrayOutputStream(); byte[] buf=new byte[8192]; int n;
+            while((n=in.read(buf))>=0)out.write(buf,0,n); in.close(); return out.toString(StandardCharsets.UTF_8.name());
+        }
+        @JavascriptInterface public void notifySignal(String title,String body) {
+            NotificationCompat.Builder b=new NotificationCompat.Builder(c,"signals").setSmallIcon(android.R.drawable.ic_dialog_info).setContentTitle(title).setContentText(body).setPriority(NotificationCompat.PRIORITY_HIGH).setAutoCancel(true);
+            if(ActivityCompat.checkSelfPermission(c,Manifest.permission.POST_NOTIFICATIONS)==PackageManager.PERMISSION_GRANTED) NotificationManagerCompat.from(c).notify((int)(System.currentTimeMillis()%100000),b.build());
+        }
+    }
+    @Override public void onBackPressed(){ if(web.canGoBack())web.goBack(); else super.onBackPressed(); }
+}
