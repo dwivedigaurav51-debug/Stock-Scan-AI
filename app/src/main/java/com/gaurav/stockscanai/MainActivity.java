@@ -71,7 +71,7 @@ public class MainActivity extends Activity {
                     con.setRequestMethod("GET");con.setConnectTimeout(15000);con.setReadTimeout(15000);
                     con.setRequestProperty("Accept","application/json");
                     con.setRequestProperty("X-API-Key",key);
-                    con.setRequestProperty("User-Agent","StockScanAI/7.1");
+                    con.setRequestProperty("User-Agent","StockScanAI/7.2");
                     int code=con.getResponseCode();
                     InputStream in=(code>=200&&code<400)?con.getInputStream():con.getErrorStream();
                     body=readAll(in);
