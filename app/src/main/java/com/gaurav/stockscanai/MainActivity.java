@@ -28,9 +28,22 @@ public class MainActivity extends Activity {
         s.setJavaScriptEnabled(true);
         s.setDomStorageEnabled(true);
         s.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        s.setAllowContentAccess(false);
+        if (Build.VERSION.SDK_INT >= 16) {
+            s.setAllowFileAccessFromFileURLs(false);
+            s.setAllowUniversalAccessFromFileURLs(false);
+        }
         web.clearCache(true);
         web.addJavascriptInterface(new Bridge(this, web), "StockScanAndroid");
-        web.setWebViewClient(new WebViewClient());
+        web.setWebViewClient(new WebViewClient() {
+            @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                Uri u=request.getUrl();
+                return !("file".equalsIgnoreCase(u.getScheme()) && u.toString().startsWith("file:///android_asset/"));
+            }
+            @Override public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                return !(url != null && url.startsWith("file:///android_asset/"));
+            }
+        });
         web.setWebChromeClient(new WebChromeClient());
         web.loadUrl("file:///android_asset/index.html");
     }
@@ -45,7 +58,7 @@ public class MainActivity extends Activity {
         private final Context c; private final WebView web; private final SharedPreferences prefs;
         Bridge(Context c,WebView web){this.c=c;this.web=web;this.prefs=c.getSharedPreferences("stock_scan_secure",Context.MODE_PRIVATE);}
         @JavascriptInterface public void saveApiKey(String key){if(key!=null)prefs.edit().putString("indianapi_key",key.trim()).apply();}
-        @JavascriptInterface public String getApiKey(){return prefs.getString("indianapi_key","");}
+        @JavascriptInterface public boolean hasApiKey(){return !prefs.getString("indianapi_key","").isEmpty();}
         @JavascriptInterface public void clearApiKey(){prefs.edit().remove("indianapi_key").apply();}
         @JavascriptInterface public void apiGet(String requestId,String url){
             new Thread(()->{
@@ -53,12 +66,12 @@ public class MainActivity extends Activity {
                 try{
                     Uri u=Uri.parse(url);
                     if(!"https".equalsIgnoreCase(u.getScheme())||!"stock.indianapi.in".equalsIgnoreCase(u.getHost()))throw new IOException("Blocked API host");
-                    String key=getApiKey(); if(key.isEmpty())throw new IOException("IndianAPI key not saved");
+                    String key=prefs.getString("indianapi_key",""); if(key.isEmpty())throw new IOException("IndianAPI key not saved");
                     HttpURLConnection con=(HttpURLConnection)new URL(url).openConnection();
                     con.setRequestMethod("GET");con.setConnectTimeout(15000);con.setReadTimeout(15000);
                     con.setRequestProperty("Accept","application/json");
                     con.setRequestProperty("X-API-Key",key);
-                    con.setRequestProperty("User-Agent","StockScanAI/7.0");
+                    con.setRequestProperty("User-Agent","StockScanAI/7.1");
                     int code=con.getResponseCode();
                     InputStream in=(code>=200&&code<400)?con.getInputStream():con.getErrorStream();
                     body=readAll(in);
