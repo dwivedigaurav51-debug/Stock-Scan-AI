@@ -7,7 +7,8 @@ android {
         applicationId = "com.gaurav.stockscanai"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 4
+        versionName = "4.0"
     }
 }
+dependencies { implementation("androidx.core:core:1.15.0") }
