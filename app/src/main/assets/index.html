@@ -7,7 +7,7 @@
 <body>
 <header>
   <div class="logo">📈</div>
-  <div><h1>Stock Scan AI <i>v7.0</i></h1><small>IndianAPI • Paper Auto Trading</small></div>
+  <div><h1>Stock Scan AI <i>v7.1</i></h1><small>IndianAPI • Safer Paper Auto Trading</small></div>
   <span id="run" class="run wait">● API KEY</span>
 </header>
 <main>
@@ -23,7 +23,7 @@
 </section>
 <section class="settings card">
   <div class="sectionhead"><h2>IndianAPI Key</h2><span id="keyBadge" class="research">KEY NOT SAVED</span></div>
-  <p class="note compact">Copied IndianAPI key यहाँ paste करो। Key इस फोन की app-private storage में रहेगी; GitHub/code में नहीं जाएगी।</p>
+  <p class="note compact">Copied IndianAPI key यहाँ paste करो। Key app-private storage में रहेगी; page/JavaScript उसे पढ़ नहीं सकता और GitHub/code में नहीं जाएगी।</p>
   <div class="keyrow">
     <input id="apiKey" type="password" autocomplete="off" placeholder="IndianAPI key paste करो">
     <button id="saveKey" class="primary">Save</button>
@@ -34,7 +34,7 @@
 <div class="tabs"><button class="active" data-p="scanner">Scanner</button><button data-p="signals">Trades</button><button data-p="history">History</button></div>
 <section id="scanner" class="panel active">
   <div class="sectionhead"><h2>Indian Market Scanner</h2><span class="research">PAPER MODE</span></div>
-  <p class="note">Free-plan compatible mode: IndianAPI से provider current NSE price और historical price series लेकर EMA, RSI, MACD, momentum और volatility check होते हैं। यह broker-exchange tick feed नहीं है; इसलिए app data को “provider current/delayed” मानता है। Strong setup पर ही virtual trade खुलेगा।</p>
+  <p class="note">Provider current/delayed NSE price + 6-month daily history पर EMA 9/20/50, RSI, MACD, momentum और volatility check होते हैं। Entry 09:25–15:05 IST में, verified price movement के बाद ही; T1/T2 पर SL trail और 15:20 के बाद intraday square-off है। यह real broker order नहीं लगाता।</p>
   <div class="actions"><button id="more" class="primary">＋ Scan More Stocks</button><button id="toggle" class="ghost">▶ Start Scan</button></div>
   <div class="progress"><i id="bar"></i></div>
   <div id="scanText">IndianAPI key का इंतज़ार…</div>
