@@ -1,66 +1,49 @@
 <!doctype html>
 <html lang="hi">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#06111f">
-  <title>Stock Scan AI</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#06111f">
+<title>Stock Scan AI</title><link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header>
   <div class="logo">📈</div>
-  <div><h1>Stock Scan AI <i>v6.0</i></h1><small>Twelve Data • Paper Auto Trading</small></div>
+  <div><h1>Stock Scan AI <i>v7.0</i></h1><small>IndianAPI • Paper Auto Trading</small></div>
   <span id="run" class="run wait">● API KEY</span>
 </header>
 <main>
-  <section class="health">
-    <div><span>SCANNER</span><b id="state" class="wait">WAITING</b></div>
-    <div><span>API</span><b id="apiState" class="wait">NOT SET</b></div>
-    <div><span>CURRENT</span><b id="currentSymbol">—</b></div>
-  </section>
-  <section class="hero">
-    <div><span>VIRTUAL CAPITAL</span><b id="capital">₹10,000</b><button id="capitalBtn" class="mini">Change</button></div>
-    <div><span>AVAILABLE</span><b id="available">₹10,000</b></div>
-    <div><span>NET P&amp;L</span><b id="pnl">₹0</b></div>
-  </section>
-  <section class="settings card">
-    <div class="sectionhead"><h2>Twelve Data API</h2><span id="keyBadge" class="research">KEY NOT SAVED</span></div>
-    <p class="note compact">API key इस फोन में app-private storage में save होगी; GitHub/code में नहीं जाएगी।</p>
-    <div class="keyrow">
-      <input id="apiKey" type="password" autocomplete="off" placeholder="API key paste करो">
-      <button id="saveKey" class="primary">Save</button>
-      <button id="testKey" class="ghost">Test</button>
-    </div>
-    <div id="apiMsg" class="statusline">Key paste करके Save → Test दबाओ।</div>
-  </section>
-  <div class="tabs">
-    <button class="active" data-p="scanner">Scanner</button>
-    <button data-p="signals">Trades</button>
-    <button data-p="history">History</button>
+<section class="health">
+  <div><span>SCANNER</span><b id="state" class="wait">PAUSED</b></div>
+  <div><span>API</span><b id="apiState" class="wait">NOT SET</b></div>
+  <div><span>CURRENT</span><b id="currentSymbol">—</b></div>
+</section>
+<section class="hero">
+  <div><span>VIRTUAL CAPITAL</span><b id="capital">₹10,000</b><button id="capitalBtn" class="mini">Change</button></div>
+  <div><span>AVAILABLE</span><b id="available">₹10,000</b></div>
+  <div><span>NET P&amp;L</span><b id="pnl">₹0</b></div>
+</section>
+<section class="settings card">
+  <div class="sectionhead"><h2>IndianAPI Key</h2><span id="keyBadge" class="research">KEY NOT SAVED</span></div>
+  <p class="note compact">Copied IndianAPI key यहाँ paste करो। Key इस फोन की app-private storage में रहेगी; GitHub/code में नहीं जाएगी।</p>
+  <div class="keyrow">
+    <input id="apiKey" type="password" autocomplete="off" placeholder="IndianAPI key paste करो">
+    <button id="saveKey" class="primary">Save</button>
+    <button id="testKey" class="ghost">Test</button>
   </div>
-  <section id="scanner" class="panel active">
-    <div class="sectionhead"><h2>Real-data Scanner</h2><span class="research">PAPER MODE</span></div>
-    <p class="note">हर stock के Twelve Data candle पर EMA, RSI, MACD, VWAP, ATR, Supertrend, volume और 15m/30m/1h trend check होता है। Strong setup मिलने पर ही virtual trade खुलेगा। Real broker order कभी नहीं जाएगा।</p>
-    <div class="actions">
-      <button id="more" class="primary">＋ Scan More Stocks</button>
-      <button id="toggle" class="ghost">▶ Start Scan</button>
-    </div>
-    <div class="progress"><i id="bar"></i></div>
-    <div id="scanText">API key का इंतज़ार…</div>
-    <div id="analysisCard" class="card">Latest analysis यहाँ दिखेगा।</div>
-    <div id="queue" class="card"></div>
-  </section>
-  <section id="signals" class="panel"><h2>Open Virtual Trades</h2><div id="tradeList"></div></section>
-  <section id="history" class="panel">
-    <h2>Trade History</h2>
-    <div class="filters">
-      <button data-f="ALL" class="active">All</button><button data-f="BUY">Buy</button><button data-f="SELL">Sell</button><button data-f="WIN">Win</button><button data-f="LOSS">Loss</button>
-    </div>
-    <div id="historyList"></div>
-  </section>
+  <div id="apiMsg" class="statusline">Key paste करके Save → Test दबाओ।</div>
+</section>
+<div class="tabs"><button class="active" data-p="scanner">Scanner</button><button data-p="signals">Trades</button><button data-p="history">History</button></div>
+<section id="scanner" class="panel active">
+  <div class="sectionhead"><h2>Indian Market Scanner</h2><span class="research">PAPER MODE</span></div>
+  <p class="note">Free-plan compatible mode: IndianAPI से provider current NSE price और historical price series लेकर EMA, RSI, MACD, momentum और volatility check होते हैं। यह broker-exchange tick feed नहीं है; इसलिए app data को “provider current/delayed” मानता है। Strong setup पर ही virtual trade खुलेगा।</p>
+  <div class="actions"><button id="more" class="primary">＋ Scan More Stocks</button><button id="toggle" class="ghost">▶ Start Scan</button></div>
+  <div class="progress"><i id="bar"></i></div>
+  <div id="scanText">IndianAPI key का इंतज़ार…</div>
+  <div id="analysisCard" class="card">Latest analysis यहाँ दिखेगा।</div>
+  <div id="queue" class="card"></div>
+</section>
+<section id="signals" class="panel"><h2>Open Virtual Trades</h2><div id="tradeList"></div></section>
+<section id="history" class="panel"><h2>Trade History</h2><div class="filters"><button data-f="ALL" class="active">All</button><button data-f="BUY">Buy</button><button data-f="SELL">Sell</button><button data-f="WIN">Win</button><button data-f="LOSS">Loss</button></div><div id="historyList"></div></section>
 </main>
 <nav><span id="last">Last API —</span><span id="clock"></span></nav>
 <script src="app.js"></script>
-</body>
-</html>
+</body></html>
