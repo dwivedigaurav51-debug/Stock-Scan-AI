@@ -17,7 +17,7 @@ public class MainActivity extends Activity {
   s.setJavaScriptEnabled(true); s.setDomStorageEnabled(true); s.setCacheMode(WebSettings.LOAD_NO_CACHE);
   web.clearCache(true);
   web.setWebViewClient(new WebViewClient()); web.setWebChromeClient(new WebChromeClient());
-  web.loadUrl("https://stock-scan-ai.hatchable.site/?app=v2");
+  web.loadUrl("https://stock-scan-ai.hatchable.site/?app=v3");
  }
  @Override public void onBackPressed(){if(web.canGoBack()) web.goBack(); else super.onBackPressed();}
 }
